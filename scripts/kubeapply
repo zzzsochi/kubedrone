@@ -2,8 +2,13 @@
 
 set -e
 
+if [ "${PLUGIN_DEBUG}" == "true" ]; then
+    # debug: "true"
+    set -x
+fi
 
 if [ -z "${PLUGIN_APPLY_FILE}" ]; then
+    # apply_file: file.yaml
     echo "Variable PLUGIN_APPLY_FILE is required" > /dev/stderr
     exit 1
 fi

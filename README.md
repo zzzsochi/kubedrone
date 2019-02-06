@@ -53,3 +53,14 @@
     aws_access_key_id: "secret"
     aws_secret_access_key: "secret"
 ```
+
+### Verbose mode
+
+```yaml
+- name: deploy
+  image: zzzsochi/kubedrone
+  settings:
+    debug: "true"
+    apply_file: build/config.yaml
+    ...
+```
