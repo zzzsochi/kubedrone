@@ -1,8 +1,8 @@
 FROM python:3.7-alpine3.8
 LABEL maintainer="Alexander Zelenyak <zzz.sochi@gmail.com>"
 
-ARG KUBECTL_VERSION=v1.13.2
-ARG AWSCLI_VERSION=1.16.96
+ARG KUBECTL_VERSION=v1.13.3
+ARG AWSCLI_VERSION=1.16.98
 ARG AIA_VERSION_AND_DATE=1.11.5/2018-12-06
 
 ADD https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl /usr/local/bin/kubectl
