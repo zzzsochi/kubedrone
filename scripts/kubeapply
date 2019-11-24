@@ -7,10 +7,10 @@ if [ "${PLUGIN_DEBUG}" == "true" ]; then
     set -x
 fi
 
-if [[ (-z "${PLUGIN_APPLY_FILE}") && (-z "${PLUGIN_APPLY_KUSTOMIZE}") ]]; then
+if [[ -z "${PLUGIN_APPLY_FILE}" && -z "${PLUGIN_APPLY_KUSTOMIZE}" ]]; then
     echo "Variable PLUGIN_APPLY_FILE or PLUGIN_APPLY_KUSTOMIZE is required" > /dev/stderr
     exit 1
-elif [[ (! -z "${PLUGIN_APPLY_FILE}") && (! -z "${PLUGIN_APPLY_KUSTOMIZE}") ]]; then
+elif [[ ! -z "${PLUGIN_APPLY_FILE}" && ! -z "${PLUGIN_APPLY_KUSTOMIZE}" ]]; then
     echo "Exactly one of PLUGIN_APPLY_FILE or PLUGIN_APPLY_KUSTOMIZE is allowed" > /dev/stderr
     exit 1
 fi
