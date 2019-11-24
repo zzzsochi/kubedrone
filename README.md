@@ -1,7 +1,26 @@
-# kubectl apply -f <file>
+# Apply kubernates configuration from drone
 
-## Usage
+## kubectl apply -f <file>
 
+```yaml
+- name: deploy
+  image: zzzsochi/kubedrone
+  settings:
+    apply_file: build/config.yaml
+    ...
+```
+
+## kubectl apply -k <kustomize-dir>
+
+```yaml
+- name: deploy
+  image: zzzsochi/kubedrone
+  settings:
+    apply_kustomize: build/kustomize/stage
+    ...
+```
+
+## Authentification
 
 ### Token
 
@@ -9,10 +28,10 @@
 - name: deploy
   image: zzzsochi/kubedrone
   settings:
-    apply_file: build/config.yaml
     server: "secret"
     server_ca: "secret"
     token: "secret"
+    ...
 ```
 
 ### Client key
@@ -21,11 +40,11 @@
 - name: deploy
   image: zzzsochi/kubedrone
   settings:
-    apply_file: build/config.yaml
     server: "secret"
     server_ca: "secret"
     client_crt: "secret"
     client_key: "secret"
+    ...
 ```
 
 ### Basic auth
@@ -34,11 +53,11 @@
 - name: deploy
   image: zzzsochi/kubedrone
   settings:
-    apply_file: build/config.yaml
     server: "secret"
     server_ca: "secret"
     username: "secret"
     password: "secret"
+    ...
 ```
 
 ### AWS EKS
@@ -47,20 +66,19 @@
 - name: deploy
   image: zzzsochi/kubedrone
   settings:
-    apply_file: build/config.yaml
     eks_cluster_region: "secret"
     eks_cluster_name: "secret"
     aws_access_key_id: "secret"
     aws_secret_access_key: "secret"
+    ...
 ```
 
-### Verbose mode
+## Verbose mode
 
 ```yaml
 - name: deploy
   image: zzzsochi/kubedrone
   settings:
     debug: "true"
-    apply_file: build/config.yaml
     ...
 ```

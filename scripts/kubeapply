@@ -7,9 +7,11 @@ if [ "${PLUGIN_DEBUG}" == "true" ]; then
     set -x
 fi
 
-if [ -z "${PLUGIN_APPLY_FILE}" ]; then
-    # apply_file: file.yaml
-    echo "Variable PLUGIN_APPLY_FILE is required" > /dev/stderr
+if [[ (-z "${PLUGIN_APPLY_FILE}") && (-z "${PLUGIN_APPLY_KUSTOMIZE}") ]]; then
+    echo "Variable PLUGIN_APPLY_FILE or PLUGIN_APPLY_KUSTOMIZE is required" > /dev/stderr
+    exit 1
+elif [[ (! -z "${PLUGIN_APPLY_FILE}") && (! -z "${PLUGIN_APPLY_KUSTOMIZE}") ]]; then
+    echo "Exactly one of PLUGIN_APPLY_FILE or PLUGIN_APPLY_KUSTOMIZE is allowed" > /dev/stderr
     exit 1
 fi
 
@@ -61,4 +63,10 @@ fi
 kubectl config set-context default --cluster=default --user=default
 kubectl config use-context default
 
-kubectl apply -f "${PLUGIN_APPLY_FILE}"
+if [ ! -z "${PLUGIN_APPLY_FILE}" ]; then
+    kubectl apply -f "${PLUGIN_APPLY_FILE}"
+elif [ ! -z "${PLUGIN_APPLY_KUSTOMIZE}" ]; then
+    kubectl apply -k "${PLUGIN_APPLY_KUSTOMIZE}"
+else
+    exit 1
+fi
