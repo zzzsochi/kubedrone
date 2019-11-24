@@ -1,4 +1,4 @@
-# Apply kubernates configuration from drone
+# Apply [kubernetes](https://kubernetes.io/) configuration from [drone](https://drone.io/)
 
 ## kubectl apply -f <file>
 
