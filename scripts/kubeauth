@@ -1,0 +1,57 @@
+#!/usr/bin/env sh
+
+set -e
+
+if [ "${PLUGIN_DEBUG}" == "true" ]; then
+    # debug: "true"
+    set -x
+fi
+
+if [ ! -z "${PLUGIN_EKS_CLUSTER_NAME}" ]; then
+    # eks_cluster_name
+    # eks_cluster_region
+    # aws_access_key_id
+    # aws_secret_access_key
+    export AWS_ACCESS_KEY_ID=${PLUGIN_AWS_ACCESS_KEY_ID}
+    export AWS_SECRET_ACCESS_KEY=${PLUGIN_AWS_SECRET_ACCESS_KEY}
+    export AWS_DEFAULT_REGION=${PLUGIN_EKS_CLUSTER_REGION}
+    CLUSTER_DATA=$(aws eks describe-cluster --name=${PLUGIN_EKS_CLUSTER_NAME})
+    echo ${CLUSTER_DATA} | jq -r .cluster.certificateAuthority.data | base64 -d > /tmp/cluster.crt
+    kubectl config set-cluster default --server="$(echo ${CLUSTER_DATA} | jq -r .cluster.endpoint)" --certificate-authority=/tmp/cluster.crt
+    kubectl config set-credentials default --token="$(aws-iam-authenticator token -i "${PLUGIN_EKS_CLUSTER_NAME}" | jq -r .status.token)"
+
+elif [ ! -z "${PLUGIN_TOKEN}" ]; then
+    # server
+    # server_ca
+    # token
+    echo "${PLUGIN_SERVER_CA}" > /tmp/cluster.crt
+    kubectl config set-cluster default --server="${PLUGIN_SERVER}" --certificate-authority=/tmp/cluster.crt
+    kubectl config set-credentials default --token="${PLUGIN_TOKEN}"
+
+elif [ ! -z "${PLUGIN_CLIENT_KEY}" ]; then
+    # server
+    # server_ca
+    # client_crt
+    # client_key
+    echo "${PLUGIN_SERVER_CA}" > /tmp/cluster.crt
+    echo "${PLUGIN_CLIENT_CRT}" > /tmp/client.crt
+    echo "${PLUGIN_CLIENT_KEY}" > /tmp/client.key
+    kubectl config set-cluster default --server="${PLUGIN_SERVER}" --certificate-authority=/tmp/cluster.crt
+    kubectl config set-credentials default --client-certificate=/tmp/client.crt --client-key=/tmp/client.key
+
+elif [ ! -z "${PLUGIN_USERNAME}" ]; then
+    # server
+    # server_ca
+    # username
+    # password
+    echo "${PLUGIN_SERVER_CA}" > /tmp/cluster.crt
+    kubectl config set-cluster default --server="${PLUGIN_SERVER}" --certificate-authority=/tmp/cluster.crt
+    kubectl config set-credentials default --username="${PLUGIN_USERNAME}" --password="${PLUGIN_PASSWORD}"
+
+else
+    echo "Authenticate credentials is required" > /dev/stderr
+    exit 1
+fi
+
+kubectl config set-context default --cluster=default --user=default
+kubectl config use-context default
