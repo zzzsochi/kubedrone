@@ -1,0 +1,57 @@
+#!/usr/bin/env sh
+
+set -e
+
+if [ "${PLUGIN_DEBUG}" == "true" ]; then
+    # debug: "true"
+    set -x
+fi
+
+kubeauth
+
+if [ "${PLUGIN_COMMAND}" == "get" ]; then
+    version=$(kubectl get configmaps -l role=version,vendor=${PLUGIN_VENDOR},service=${PLUGIN_SERVICE},commit=${DRONE_COMMIT_SHA} -o json | jq -r '.items[].data.version' | head -n 1)
+    if [ -z "${version}" ]; then
+        echo "Version is not found" > /dev/stderr
+        exit 1
+    fi
+
+    status=$(kubectl get configmaps -l role=version,vendor=${PLUGIN_VENDOR},service=${PLUGIN_SERVICE},commit=${DRONE_COMMIT_SHA} -o json | jq -r '.items[].data.status' | head -n 1)
+    if [ "${PLUGIN_STATUS}" != "${status}" ]; then
+        echo "Status mismatch: ${PLUGIN_STATUS} != ${status}" > /dev/stderr
+        exit 1
+    fi
+
+    mkdir -p "$(dirname ${PLUGIN_VERSION_FILE})"
+    echo "${version}" > "${PLUGIN_VERSION_FILE}"
+    echo "version: ${version}"
+    echo "status:  ${status}"
+
+elif [ "${PLUGIN_COMMAND}" == "save" ]; then
+    version=$(cat ${PLUGIN_VERSION_FILE})
+    yaml=$(cat << EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "${PLUGIN_SERVICE}-version-${version}"
+  labels:
+    vendor: "${PLUGIN_VENDOR}"
+    service: "${PLUGIN_SERVICE}"
+    role: "version"
+    commit: "${DRONE_COMMIT_SHA}"
+    version: "${version}"
+    status: "${PLUGIN_STATUS}"
+data:
+  commit: "${DRONE_COMMIT_SHA}"
+  version: "${version}"
+  status: "${PLUGIN_STATUS}"
+EOF
+)
+    echo "-=- config -=-"
+    echo
+    echo "${yaml}"
+    echo
+    echo "-=-=-=--=-=-=-"
+
+    echo "${yaml}" | kubectl apply -f -
+fi
