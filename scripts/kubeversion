@@ -10,13 +10,13 @@ fi
 kubeauth
 
 if [ "${PLUGIN_COMMAND}" == "get" ]; then
-    version=$(kubectl get configmaps -l role=version,vendor=${PLUGIN_VENDOR},service=${PLUGIN_SERVICE},commit=${DRONE_COMMIT_SHA} -o json | jq -r '.items[].data.version' | head -n 1)
+    version=$(kubectl get -n ${PLUGIN_NAMESPACE:-default} configmaps -l role=version,vendor=${PLUGIN_VENDOR},service=${PLUGIN_SERVICE},commit=${DRONE_COMMIT_SHA} -o json | jq -r '.items[].data.version' | head -n 1)
     if [ -z "${version}" ]; then
         echo "Version is not found" > /dev/stderr
         exit 1
     fi
 
-    status=$(kubectl get configmaps -l role=version,vendor=${PLUGIN_VENDOR},service=${PLUGIN_SERVICE},commit=${DRONE_COMMIT_SHA} -o json | jq -r '.items[].data.status' | head -n 1)
+    status=$(kubectl get -n ${PLUGIN_NAMESPACE:-default} configmaps -l role=version,vendor=${PLUGIN_VENDOR},service=${PLUGIN_SERVICE},commit=${DRONE_COMMIT_SHA} -o json | jq -r '.items[].data.status' | head -n 1)
     if [ "${PLUGIN_STATUS}" != "${status}" ]; then
         echo "Status mismatch: ${PLUGIN_STATUS} != ${status}" > /dev/stderr
         exit 1
@@ -34,6 +34,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: "${PLUGIN_SERVICE}-version-${version}"
+  namespace: "${PLUGIN_NAMESPACE:-default}"
   labels:
     vendor: "${PLUGIN_VENDOR}"
     service: "${PLUGIN_SERVICE}"
