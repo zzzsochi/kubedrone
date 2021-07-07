@@ -20,6 +20,16 @@
     ...
 ```
 
+## Run script
+
+```yaml
+- name: deploy
+  image: zzzsochi/kubedrone
+  settings:
+    script: build/kustomize/stage
+    ...
+```
+
 ## Authentification
 
 ### Token

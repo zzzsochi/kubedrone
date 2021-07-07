@@ -7,8 +7,8 @@ if [ "${PLUGIN_DEBUG}" == "true" ]; then
     set -x
 fi
 
-if [[ -z "${PLUGIN_APPLY_FILE}" && -z "${PLUGIN_APPLY_KUSTOMIZE}" ]]; then
-    echo "Variable PLUGIN_APPLY_FILE or PLUGIN_APPLY_KUSTOMIZE is required" > /dev/stderr
+if [[ -z "${PLUGIN_APPLY_FILE}" && -z "${PLUGIN_APPLY_KUSTOMIZE}" && -z "${PLUGIN_SCRIPT}" ]]; then
+    echo "Variable PLUGIN_APPLY_FILE, PLUGIN_APPLY_KUSTOMIZE or PLUGIN_SCRIPT is required" > /dev/stderr
     exit 1
 elif [[ ! -z "${PLUGIN_APPLY_FILE}" && ! -z "${PLUGIN_APPLY_KUSTOMIZE}" ]]; then
     echo "Exactly one of PLUGIN_APPLY_FILE or PLUGIN_APPLY_KUSTOMIZE is allowed" > /dev/stderr
@@ -17,10 +17,14 @@ fi
 
 kubeauth
 
+if [ -z "${PLUGIN_SCRIPT}" ]; then
+    ${PLUGIN_SCRIPT}
+fi
+
 if [ ! -z "${PLUGIN_APPLY_FILE}" ]; then
     kubectl apply -f "${PLUGIN_APPLY_FILE}"
 elif [ ! -z "${PLUGIN_APPLY_KUSTOMIZE}" ]; then
     kustomize build "${PLUGIN_APPLY_KUSTOMIZE}" | kubectl apply -f -
-else
+elif [ -z "${PLUGIN_SCRIPT}" ]; then
     exit 1
 fi
