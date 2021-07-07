@@ -10,7 +10,7 @@
     ...
 ```
 
-## kubectl apply -k <kustomize-dir>
+## kustomize build <kustomize-dir> | kubectl apply -f
 
 ```yaml
 - name: deploy

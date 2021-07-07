@@ -20,7 +20,7 @@ kubeauth
 if [ ! -z "${PLUGIN_APPLY_FILE}" ]; then
     kubectl apply -f "${PLUGIN_APPLY_FILE}"
 elif [ ! -z "${PLUGIN_APPLY_KUSTOMIZE}" ]; then
-    kubectl apply -k "${PLUGIN_APPLY_KUSTOMIZE}"
+    kustomize build "${PLUGIN_APPLY_KUSTOMIZE}" | kubectl apply -f -
 else
     exit 1
 fi
